@@ -17,7 +17,7 @@ Parameters:
   ErmeticManagedAccountTemplateUrl:
     Description: Ermetic CloudFormation template URL for managed accounts.
     Type: String
-    Default: "https://raw.githubusercontent.com/ermetic/utilities/main/AWS/ControlTower/cloudformationClient/ermetic-managed-account.yaml"
+    Default: "https://raw.githubusercontent.com/ermetic/utilities/main/AWS/ControlTower/cloudformation/ermetic-managed-account.yaml"
   TrailArn:
     Description: CloudTrail organizational trail ARN.
     Type: String
