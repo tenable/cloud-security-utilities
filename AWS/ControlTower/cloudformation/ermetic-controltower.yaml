@@ -32,15 +32,7 @@ Resources:
       Parameters:
         - ParameterKey: ErmeticAccountId
           ParameterValue: !Ref ErmeticAccountId
-      AdministrationRoleARN:
-        !Join [
-          ":",
-          [
-            "arn:aws:iam:",
-            !Ref "AWS::AccountId",
-            "role/service-role/AWSControlTowerStackSetRole",
-          ],
-        ]
+      AdministrationRoleARN: !Join [":", ["arn:aws:iam:", !Ref "AWS::AccountId", "role/service-role/AWSControlTowerStackSetRole" ]]
       Capabilities:
         - CAPABILITY_AUTO_EXPAND
         - CAPABILITY_IAM
@@ -144,32 +136,14 @@ Resources:
               - Effect: Allow
                 Action:
                   - "cloudformation:CreateStackInstances"
-                Resource:
-                  !Join [
-                    ":",
-                    [
-                      "arn:aws:cloudformation",
-                      !Ref "AWS::Region",
-                      !Ref "AWS::AccountId",
-                      "stackset/ErmeticManagedAccountStackSet:*",
-                    ],
-                  ]
+                Resource: !Join [":", ["arn:aws:cloudformation", !Ref "AWS::Region", !Ref "AWS::AccountId", "stackset/ErmeticManagedAccountStackSet:*"]]
               - Effect: Allow
                 Action:
                   - "logs:CreateLogGroup"
                   - "logs:CreateLogStream"
                   - "logs:DescribeLogStreams"
                   - "logs:PutLogEvents"
-                Resource:
-                  !Join [
-                    ":",
-                    [
-                      "arn:aws:logs",
-                      !Ref "AWS::Region",
-                      !Ref "AWS::AccountId",
-                      "log-group/aws/lambda/ermetic-controltower-*",
-                    ],
-                  ]
+                Resource: !Join [":", ["arn:aws:logs", !Ref "AWS::Region", !Ref "AWS::AccountId", "log-group/aws/lambda/ermetic-controltower-*"]]
       ManagedPolicyArns:
         - !Sub "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"
         - !Sub "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
