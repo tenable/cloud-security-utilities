@@ -18,7 +18,7 @@ Ermetic integration with Control Tower - Allow new or updated AWS accounts in a 
 ## How to Deploy and Test
 
  1. **Deploy - AWS Control Tower Management Account**
-     - Launch the [**ermetic-controltower.yaml**](cloudformation/ermetic-controltower.yaml) template in the AWS Control Tower management account.
+     - Launch the [**aws-ermetic-controltower.yaml**](cloudformation/aws-ermetic-controltower.yaml) template in the AWS Control Tower management account.
         - Ensure that a CloudFormation stack set is successfully created.
         - Ensure that a CloudWatch Events rule is successfully created with an Lambda target to handle Control Tower lifecycle events.
  2. **Test - Add a Managed Account** 
@@ -28,3 +28,9 @@ Ermetic integration with Control Tower - Allow new or updated AWS accounts in a 
         - This can take up to 30 mins for the managed account to be sucessfully created and the Control Tower lifecycle event to trigger.
         - Login to the Control Tower managed account - 
            - Validate that a CloudFormation stack has been provisioned and that the Ermetic integration IAM role has been created.
+3. Test—Complete the onboarding of the new managed account in Ermetic
+    - Sign in to your Ermetic account and select Settings from the left panel, select Accounts, and then select Add a new AWS account. Skip steps 1, 2, and 3 since we have already provisioned the IAM role in the new account.  For step 4,  provide the Account ID of the new managed account (Managed Account ID) and the ARN of the newly provisioned IAM role in the managed account (arn:aws:iam::<Managed Account ID>:role/IAM_R_ERMETIC_SECURITY_XA). 
+
+4. Validate
+   - Sign in to your Ermetic account and validate that identity intelligence data for the new account is being collected and displayed on the Ermetic dashboard
+
