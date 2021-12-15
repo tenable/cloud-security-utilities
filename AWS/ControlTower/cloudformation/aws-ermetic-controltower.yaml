@@ -15,8 +15,7 @@ Description: AWS Control Tower Lifecycle Events for Ermetic(MPCT-jqowxsqq)
 #    - The Lifecycle Lambda deploys a cloudformation stack in the newly added Control Tower managed account. 
 #     The stack creates a Cross Account IAM role that creates trust with Ermetic SaaS
 #  
-##
-## @kmmahaj
+#
 ## 
 #
 # ------------------------------------------------------------...............................................
@@ -33,7 +32,7 @@ Parameters:
     Default: '081802104111'
   ErmeticTemplateURL:
     Description: >-
-      Base URL for Ermetic's CloudFormation template for managed accounts
+      URL for the managed account template (ermetic-managedaccount.yaml) 
     Type: String
     Default: 'https://ermetic-controltower-managedaccount.s3.amazonaws.com/ermetic-managedaccount.yaml'
 
