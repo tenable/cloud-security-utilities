@@ -28,3 +28,5 @@ Ermetic integration with Control Tower - Allow new or updated AWS accounts in a 
         - This can take up to 30 mins for the managed account to be sucessfully created and the Control Tower lifecycle event to trigger.
         - Login to the Control Tower managed account - 
            - Validate that a CloudFormation stack has been provisioned and that the Ermetic integration IAM role has been created.
+ 3. **Validate**
+     - Sign in to your Ermetic account and validate that identity intelligence data for the new account is being collected and displayed on the Ermetic dashboard
