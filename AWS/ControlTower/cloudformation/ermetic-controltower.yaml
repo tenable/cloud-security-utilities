@@ -14,25 +14,48 @@ Parameters:
     Description: Ermetic AWS Account ID (12 digits).
     Type: String
     Default: "081802104111"
+  ErmeticApiKeyToken:
+    AllowedPattern: .+
+    ConstraintDescription: ErmeticApiKeyToken is required
+    Description: Ermetic API key token
+    NoEcho: true
+    Type: String
+  ErmeticApplicationUrl:
+    AllowedValues:
+      - "https://eu.app.ermetic.com"
+      - "https://us.app.ermetic.com"
+    Description: Ermetic application URL
+    Type: String
+    Default: "https://us.app.ermetic.com"
+  ErmeticExternalId:
+    AllowedPattern: .+
+    ConstraintDescription: ErmeticExternalId is required
+    Description: Ermetic external ID
+    Type: String
   ErmeticManagedAccountTemplateUrl:
-    Description: Ermetic CloudFormation template URL for managed accounts.
+    Description: Ermetic CloudFormation template URL for managed accounts
     Type: String
-    Default: "https://raw.githubusercontent.com/ermetic/utilities/main/AWS/ControlTower/cloudformation/ermetic-managed-account.yaml"
-  TrailArn:
-    Description: CloudTrail organizational trail ARN.
-    Type: String
-    Default: arn:aws:cloudtrail:<CTManagementAccountRegion>:<CTManagementAccountId>:trail/aws-controltower-BaselineCloudTrail
+    Default: "https://ermetic-controltower.s3.us-east-2.amazonaws.com/ermetic-controltower-managed-account.yaml"
 
 Resources:
-  ErmeticManagedAccountStackSet:
+  ErmeticApiKeyTokenSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: ErmeticApiKeyTokenSecret
+      Description: Ermetic API key token
+      SecretString: !Ref ErmeticApiKeyToken
+
+  ErmeticManagedAccountsStackSet:
     Type: AWS::CloudFormation::StackSet
     Properties:
-      StackSetName: "ErmeticManagedAccountStackSet"
+      StackSetName: "ErmeticManagedAccountsStackSet"
       Description: Ermetic managed accounts stack set
       Parameters:
         - ParameterKey: ErmeticAccountId
           ParameterValue: !Ref ErmeticAccountId
-      AdministrationRoleARN: !Join [":", ["arn:aws:iam:", !Ref "AWS::AccountId", "role/service-role/AWSControlTowerStackSetRole" ]]
+        - ParameterKey: ErmeticExternalId
+          ParameterValue: !Ref ErmeticExternalId
+      AdministrationRoleARN: !Join [":", ["arn", !Ref "AWS::Partition", "iam:", !Ref "AWS::AccountId", "role/service-role/AWSControlTowerStackSetRole" ]]
       Capabilities:
         - CAPABILITY_AUTO_EXPAND
         - CAPABILITY_IAM
@@ -65,53 +88,135 @@ Resources:
   ErmeticManagementAccountFunction:
     Type: AWS::Lambda::Function
     Properties:
+      FunctionName: ErmeticManagementAccountFunction
       Code:
         ZipFile: |
           import boto3
           import json
           import logging
           import os
+          import requests
+          import time
 
           logger = logging.getLogger()
           logger.setLevel(logging.INFO)
           result = { "ResponseMetadata": { "HTTPStatusCode": "400" } }
 
-          def handle_event(event, context):
-              trailArn = os.environ['TrailArn']
+          def get_api_key_token():
+              secretsmanager = boto3.client('secretsmanager')
+              return secretsmanager.get_secret_value(SecretId='ErmeticApiKeyTokenSecret')['SecretString']
 
-              eventDetails = event['detail']
-              eventDetailsServiceEventDetails = eventDetails['serviceEventDetails']
-              eventName = eventDetails['eventName']
-              eventRegionName = eventDetails['awsRegion']
+          def add_or_update_account(
+              id,
+              name,
+              region):
+              ermeticApiUrl = os.environ['ErmeticApplicationUrl'] + '/api/graph'
+              partition = os.environ['Partition']
 
-              if eventName == 'CreateManagedAccount' or eventName == 'UpdateManagedAccount':
-                  accountInfo = {}
-                  if eventName == 'CreateManagedAccount':
-                      accountInfo = eventDetailsServiceEventDetails['createManagedAccountStatus']
-                  if eventName == 'UpdateManagedAccount':
-                      accountInfo = eventDetailsServiceEventDetails['updateManagedAccountStatus']
-
-                  if accountInfo['state'] == 'SUCCEEDED':
-                      accountId = accountInfo['account']['accountId']
-
-                      cloudformationClient = boto3.client('cloudformationClient')
-                      stackSetName = 'ErmeticManagedAccountStackSet'
-                      try:
-                          result = cloudformationClient.create_stack_instances(
-                              Accounts=[accountId],
-                              Regions=[eventRegionName], 
-                              StackSetName=stackSetName)
-                          logger.info(f'{stackSetName} processed sucessfully')
-                      except Exception as excption:
-                          logger.error(f'Failed to create stack {stackSetName}. Exception: {exception}')
+              createAwsAccountMutation = f"""
+              mutation {{
+                  CreateAwsAccount(
+                      input: {{
+                          Id: "{id}"
+                          Name: "{name}"
+                          ParentGroupId: "awsRoot"
+                          RoleArn: "arn:{partition}:iam::{id}:role/ErmeticRole"
+                      }}) {{
+                          Account {{
+                              Id
+                          }}
+                  }}
+              }}
+              """
+              requestHeaders = { 'Authorization': 'Bearer ' + get_api_key_token() }
+              timeout = time.time() + 120
+              while True:
+                  response = requests.post(
+                      ermeticApiUrl,
+                      headers = requestHeaders,
+                      json = { 'query': createAwsAccountMutation })
+                  if response.status_code == 200:
+                      break
+                  elif response.json()['errors'][0]['message'] == 'AWS account already exists':
+                      break;
+                  elif time.time() < timeout:
+                      time.sleep(5)
+                      logger.info(f'Retrying CreateAwsAccount API {response.json()}')
                   else:
-                      logger.info(f'Skipping unsuccessful event {event}')
-                      return False
-              else:
-                  logger.info(f'Unexpected event {event}')
+                      raise Exception(f'Failed CreateAwsAccount API {response.json()}')
+
+              updateAwsAccountMutation = f"""
+              mutation {{
+                  UpdateAwsAccount(
+                      input: {{
+                          Id: "{id}"
+                          Name: "{name}"
+                          Trail: {{
+                              Arn: "arn:{partition}:cloudtrail:{region}:{id}:trail/aws-controltower-BaselineCloudTrail"
+                          }}
+                      }}) {{
+                          Account {{
+                              Id
+                          }}
+                  }}
+              }}
+              """
+
+              response = requests.post(
+                  ermeticApiUrl,
+                  headers = requestHeaders,
+                  json = { 'query': updateAwsAccountMutation })
+              if response.status_code != 200:
+                  logger.warning(f'Failed UpdateAwsAccount API {response.json()}')
+              
+
+          def handle_event(event, context):
+              try:
+                  eventDetails = event['detail']
+                  eventName = eventDetails['eventName']
+                  eventRegionName = eventDetails['awsRegion']
+
+                  if eventName == 'CreateManagedAccount' or eventName == 'UpdateManagedAccount':
+                      eventDetailsServiceEventDetails = eventDetails['serviceEventDetails']
+                      eventAccountStatus = {}
+                      if eventName == 'CreateManagedAccount':
+                          eventAccountStatus = eventDetailsServiceEventDetails['createManagedAccountStatus']
+                      if eventName == 'UpdateManagedAccount':
+                          eventAccountStatus = eventDetailsServiceEventDetails['updateManagedAccountStatus']
+
+                      if eventAccountStatus['state'] == 'SUCCEEDED':
+                          accountId = eventAccountStatus['account']['accountId']
+                          accountName = eventAccountStatus['account']['accountName']
+
+                          stackSetName = 'ErmeticManagedAccountsStackSet'
+                          try:
+                              cloudformationClient = boto3.client('cloudformation')
+                              result = cloudformationClient.create_stack_instances(
+                                  Accounts=[accountId],
+                                  Regions=[eventRegionName], 
+                                  StackSetName=stackSetName)
+                              logger.info(f'Stack instance created sucessfully in {stackSetName}')
+                          except Exception as exception:
+                              logger.error(f'Failed to create stack instance {stackSetName}. Exception: {exception}')
+                          
+                          try:
+                              add_or_update_account(
+                                  accountId,
+                                  accountName,
+                                  eventRegionName)
+                              logger.info('Account added/updated sucessfully in Ermetic')
+                          except Exception as exception:
+                              logger.error(f'Failed to add/update account in Ermetic. Exception: {exception}')
+                      else:
+                          logger.info(f'Skipping unsuccessful event {event}')
+                  else:
+                      logger.info(f'Unexpected event {event}')
+              except Exception as exception:
+                  logger.error(f'Unexpeted error. Exception: {exception}')
       Environment:
         Variables:
-          TrailArn: !Ref "TrailArn"
+          ErmeticApplicationUrl: !Ref "ErmeticApplicationUrl"
+          Partition: !Ref "AWS::Partition"
       Handler: index.handle_event
       MemorySize: 256
       Role: !GetAtt "ErmeticManagementAccountFunctionRole.Arn"
@@ -121,29 +226,32 @@ Resources:
   ErmeticManagementAccountFunctionRole:
     Type: "AWS::IAM::Role"
     Properties:
+      RoleName: ErmeticManagementAccountFunctionRole
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-            Action: "sts:AssumeRole"
+            Action: sts:AssumeRole
       Policies:
         - PolicyName: ErmeticManagementAccountFunctionRolePolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
-                Action:
-                  - "cloudformation:CreateStackInstances"
-                Resource: !Join [":", ["arn:aws:cloudformation", !Ref "AWS::Region", !Ref "AWS::AccountId", "stackset/ErmeticManagedAccountStackSet:*"]]
+                Action: cloudformation:CreateStackInstances
+                Resource: !Join [":", ["arn", !Ref "AWS::Partition", "cloudformation", !Ref "AWS::Region", !Ref "AWS::AccountId", "stackset/ErmeticManagedAccountsStackSet:*"]]
               - Effect: Allow
                 Action:
-                  - "logs:CreateLogGroup"
-                  - "logs:CreateLogStream"
-                  - "logs:DescribeLogStreams"
-                  - "logs:PutLogEvents"
-                Resource: !Join [":", ["arn:aws:logs", !Ref "AWS::Region", !Ref "AWS::AccountId", "log-group/aws/lambda/ermetic-controltower-*"]]
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                Resource: !Join [":", ["arn", !Ref "AWS::Partition", "logs", !Ref "AWS::Region", !Ref "AWS::AccountId", "log-group", "/aws/lambda/ErmeticManagementAccountFunction*"]]
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Join [':',["arn", !Ref "AWS::Partition", "secretsmanager", !Ref "AWS::Region", !Ref "AWS::AccountId", "secret", "ErmeticApiKeyTokenSecret-*"]]
       ManagedPolicyArns:
         - !Sub "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"
         - !Sub "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"

@@ -12,6 +12,11 @@ Parameters:
     Description: Ermetic AWS Account ID (12 digits).
     Type: String
     Default: "081802104111"
+  ErmeticExternalId:
+    AllowedPattern: .+
+    ConstraintDescription: ErmeticExternalId is required
+    Description: Ermetic external ID
+    Type: String
 
 Resources:
   ErmeticRole:
@@ -21,10 +26,11 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              AWS:
-                - !Sub "arn:${AWS::Partition}:iam::${ErmeticAccountId}:root"
-            Action:
-              - sts:AssumeRole
+              AWS: !Sub "arn:${AWS::Partition}:iam::${ErmeticAccountId}:root"
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref ErmeticExternalId
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/SecurityAudit
       Policies:
