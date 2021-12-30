@@ -58,6 +58,7 @@ Resources:
                   - ec2:Describe*
                   - ecr:Describe*
                   - ecr:GetRepositoryPolicy
+                  - ecr:GetRegistryScanningConfiguration
                   - ecr:StartImageScan
                   - ecr:List*
                   - ecr-public:Describe*
@@ -78,9 +79,11 @@ Resources:
                   - iam:Get*
                   - iam:List*
                   - identitystore:Describe*
+                  - inspector2:List*
                   - kms:Describe*
                   - kms:GetKey*
                   - kms:List*
+                  - lambda:GetAccountSettings
                   - lambda:Get*Policy
                   - lambda:List*
                   - logs:Describe*
