@@ -52,6 +52,7 @@ Resources:
                   - cloudwatch:Describe*
                   - cloudwatch:GetMetric*
                   - cloudwatch:ListMetrics
+                  - cognito-sync:GetCognitoEvents
                   - config:Describe*
                   - dynamodb:Describe*
                   - dynamodb:List*
@@ -75,11 +76,13 @@ Resources:
                   - elasticloadbalancing:Describe*
                   - es:Describe*
                   - es:List*
+                  - events:ListRules
                   - iam:Generate*
                   - iam:Get*
                   - iam:List*
                   - identitystore:Describe*
                   - inspector2:List*
+                  - iot:GetTopicRule
                   - kms:Describe*
                   - kms:GetKey*
                   - kms:List*
