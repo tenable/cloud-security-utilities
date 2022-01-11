@@ -58,10 +58,10 @@ Resources:
                   - dynamodb:List*
                   - ec2:Describe*
                   - ecr:Describe*
-                  - ecr:GetRepositoryPolicy
                   - ecr:GetRegistryScanningConfiguration
-                  - ecr:StartImageScan
+                  - ecr:GetRepositoryPolicy
                   - ecr:List*
+                  - ecr:StartImageScan
                   - ecr-public:Describe*
                   - ecr-public:GetRepositoryPolicy
                   - ecr-public:List*
@@ -86,16 +86,16 @@ Resources:
                   - kms:Describe*
                   - kms:GetKey*
                   - kms:List*
-                  - lambda:GetAccountSettings
                   - lambda:Get*Policy
+                  - lambda:GetAccountSettings
                   - lambda:List*
                   - logs:Describe*
                   - organizations:Describe*
                   - organizations:List*
-                  - redshift:Describe*
-                  - redshift:List*
                   - rds:Describe*
                   - rds:List*
+                  - redshift:Describe*
+                  - redshift:List*
                   - s3:Describe*
                   - s3:GetAccessPoint*
                   - s3:GetAccountPublicAccessBlock
