@@ -32,7 +32,7 @@ Resources:
               StringEquals:
                 sts:ExternalId: !Ref ErmeticExternalId
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/SecurityAudit
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/SecurityAudit"
       Policies:
         - PolicyName: ReadOnly
           PolicyDocument:
@@ -127,8 +127,8 @@ Resources:
                 Action:
                   - s3:GetObject
                   - s3:ListBucket
-                Resource: arn:aws:s3:::elasticbeanstalk-*
+                Resource: !Sub "arn:${AWS::Partition}:s3:::elasticbeanstalk-*"
               - Effect: Allow
                 Action: apigateway:Get*
-                NotResource: arn:aws:apigateway:*::/apikeys*
+                NotResource: !Sub "arn:${AWS::Partition}:apigateway:*::/apikeys*"
       RoleName: ErmeticRole
