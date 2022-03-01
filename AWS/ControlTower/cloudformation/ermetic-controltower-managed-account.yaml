@@ -102,6 +102,7 @@ Resources:
                   - s3:GetBucket*
                   - s3:GetEncryptionConfiguration
                   - s3:GetJobTagging
+                  - s3:GetLifecycleConfiguration
                   - s3:ListAccessPoints
                   - s3:ListAllMyBuckets
                   - s3:ListBucketVersions
