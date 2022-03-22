@@ -151,9 +151,7 @@ Resources:
                       input: {{
                           Id: "{id}"
                           Name: "{name}"
-                          Trail: {{
-                              Arn: "arn:{partition}:cloudtrail:{region}:{id}:trail/aws-controltower-BaselineCloudTrail"
-                          }}
+                          TrailArns: ["arn:{partition}:cloudtrail:{region}:{id}:trail/aws-controltower-BaselineCloudTrail"]
                       }}) {{
                           Account {{
                               Id
