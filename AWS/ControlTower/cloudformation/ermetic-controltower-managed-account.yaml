@@ -57,6 +57,9 @@ Resources:
                   - dynamodb:Describe*
                   - dynamodb:List*
                   - ec2:Describe*
+                  - ec2:DeleteSecurityGroup
+                  - ec2:RevokeSecurityGroupEgress
+                  - ec2:RevokeSecurityGroupIngress
                   - ecr:Describe*
                   - ecr:GetRegistryScanningConfiguration
                   - ecr:GetRepositoryPolicy
