@@ -134,7 +134,7 @@ Resources:
                         ermeticApiUrl,
                         headers = requestHeaders,
                         json = { 'query': createAwsAccountMutation })
-                    if response.status_code == 200:
+                    if response.status_code == 200 and not response.json().get('errors'):
                         break
                     elif response.json()['errors'][0]['message'] == 'AWS account already exists':
                         break;
@@ -163,7 +163,7 @@ Resources:
                     ermeticApiUrl,
                     headers = requestHeaders,
                     json = { 'query': updateAwsAccountMutation })
-                if response.status_code != 200:
+                if response.status_code != 200 or response.json().get('errors'):
                     logger.warning(f'Failed UpdateAwsAccount API {response.json()}')
                 
 
