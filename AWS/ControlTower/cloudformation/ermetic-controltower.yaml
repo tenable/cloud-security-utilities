@@ -14,6 +14,9 @@ Parameters:
     Description: Ermetic AWS Account ID (12 digits).
     Type: String
     Default: "081802104111"
+  ErmeticActiveRegions:
+    Description: Comma delimited list of active regions (e.g. us-east-1,us-east-2,eu-central-1 etc.)
+    Type: CommaDelimitedList
   ErmeticApiKeyToken:
     AllowedPattern: .+
     ConstraintDescription: ErmeticApiKeyToken is required
@@ -22,6 +25,7 @@ Parameters:
     Type: String
   ErmeticApplicationUrl:
     AllowedValues:
+      - "https://ca.app.ermetic.com"
       - "https://eu.app.ermetic.com"
       - "https://us.app.ermetic.com"
     Description: Ermetic application URL
@@ -109,13 +113,20 @@ Resources:
                 id,
                 name,
                 region):
+                activeRegions = os.environ['ErmeticActiveRegions']
                 ermeticApiUrl = os.environ['ErmeticApplicationUrl'] + '/api/graph'
                 partition = os.environ['Partition']
+
+                if activeRegions:
+                    activeRegions = str([activeRegion.strip('"') for activeRegion in activeRegions.split(",")]).replace("'",'"')
+                else:
+                    activeRegions = 'null'
 
                 createAwsAccountMutation = f"""
                 mutation {{
                     CreateAwsAccount(
                         input: {{
+                            ActiveRegions: {activeRegions}
                             Id: "{id}"
                             Name: "{name}"
                             ParentGroupId: "awsRoot"
@@ -221,6 +232,7 @@ Resources:
                     logger.error(f'Unexpeted error. Exception: {exception}')
       Environment:
         Variables:
+          ErmeticActiveRegions: !Join [",", !Ref "ErmeticActiveRegions"]
           ErmeticApplicationUrl: !Ref "ErmeticApplicationUrl"
           Partition: !Ref "AWS::Partition"
       Handler: index.handle_event
