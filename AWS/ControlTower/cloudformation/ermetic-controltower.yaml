@@ -15,7 +15,7 @@ Parameters:
     Type: String
     Default: "081802104111"
   ErmeticActiveRegions:
-    Description: Comma delimited list of active regions (e.g. "us-east-1","us-east-2","eu-central-1")
+    Description: Comma delimited list of active regions (e.g. us-east-1,us-east-2,eu-central-1 etc.)
     Type: CommaDelimitedList
   ErmeticApiKeyToken:
     AllowedPattern: .+
@@ -117,10 +117,10 @@ Resources:
                 ermeticApiUrl = os.environ['ErmeticApplicationUrl'] + '/api/graph'
                 partition = os.environ['Partition']
 
-                if activeRegions == '':
-                    activeRegions = 'null'
+                if activeRegions:
+                    activeRegions = str([activeRegion.strip('"') for activeRegion in activeRegions.split(",")]).replace("'",'"')
                 else:
-                    activeRegions = f'[{activeRegions}]'
+                    activeRegions = 'null'
 
                 createAwsAccountMutation = f"""
                 mutation {{
