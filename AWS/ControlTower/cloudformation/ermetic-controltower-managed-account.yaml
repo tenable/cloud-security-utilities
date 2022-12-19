@@ -74,6 +74,8 @@ Resources:
                   - elasticbeanstalk:Describe*
                   - elasticbeanstalk:List*
                   - elasticloadbalancing:Describe*
+                  - elasticmapreduce:Describe*
+                  - elasticmapreduce:List*
                   - es:Describe*
                   - es:List*
                   - events:ListRules
@@ -86,6 +88,8 @@ Resources:
                   - kms:Describe*
                   - kms:GetKey*
                   - kms:List*
+                  - kinesis:Describe*
+                  - kinesis:List*
                   - lambda:Get*Policy
                   - lambda:GetAccountSettings
                   - lambda:List*
@@ -96,6 +100,12 @@ Resources:
                   - rds:List*
                   - redshift:Describe*
                   - redshift:List*
+                  - route53:Get*
+                  - route53:List*
+                  - route53domains:Get*
+                  - route53domains:List*
+                  - route53resolver:Get*
+                  - route53resolver:List*
                   - s3:Describe*
                   - s3:GetAccessPoint*
                   - s3:GetAccountPublicAccessBlock
