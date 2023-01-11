@@ -45,6 +45,7 @@ Resources:
                   - batch:List*
                   - cloudformation:Describe*
                   - cloudformation:List*
+                  - cloudfront:ListDistributions*
                   - cloudtrail:Describe*
                   - cloudtrail:Get*
                   - cloudtrail:List*
@@ -52,6 +53,7 @@ Resources:
                   - cloudwatch:Describe*
                   - cloudwatch:GetMetric*
                   - cloudwatch:ListMetrics
+                  - cognito-idp:ListResourcesForWebACL
                   - cognito-sync:GetCognitoEvents
                   - config:Describe*
                   - dynamodb:Describe*
@@ -133,6 +135,8 @@ Resources:
                   - sso-directory:Search*
                   - sts:DecodeAuthorizationMessage
                   - tag:Get*
+                  - wafv2:Get*
+                  - wafv2:List*
                 Resource: "*"
               - Effect: Allow
                 Action:
