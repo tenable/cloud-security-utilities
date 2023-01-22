@@ -40,6 +40,8 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - acm:Describe*
+                  - acm:List*
                   - autoscaling:Describe*
                   - batch:Describe*
                   - batch:List*
