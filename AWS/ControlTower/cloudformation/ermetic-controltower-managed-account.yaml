@@ -45,8 +45,8 @@ Resources:
                   - autoscaling:Describe*
                   - batch:Describe*
                   - batch:List*
-                  - cloudformation:Get*
                   - cloudformation:Describe*
+                  - cloudformation:Get*
                   - cloudformation:List*
                   - cloudfront:Get*
                   - cloudfront:ListDistributions*
