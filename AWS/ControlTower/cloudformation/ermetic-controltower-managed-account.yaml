@@ -46,6 +46,7 @@ Resources:
                   - batch:Describe*
                   - batch:List*
                   - cloudformation:Describe*
+                  - cloudformation:Get*
                   - cloudformation:List*
                   - cloudfront:Get*
                   - cloudfront:ListDistributions*
