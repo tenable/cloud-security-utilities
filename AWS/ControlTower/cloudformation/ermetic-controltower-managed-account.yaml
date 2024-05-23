@@ -45,6 +45,8 @@ Resources:
                   - autoscaling:Describe*
                   - batch:Describe*
                   - batch:List*
+                  - bedrock:Get*
+                  - bedrock:List*
                   - cloudformation:Describe*
                   - cloudformation:Get*
                   - cloudformation:List*
