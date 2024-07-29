@@ -42,6 +42,8 @@ Resources:
                 Action:
                   - acm:Describe*
                   - acm:List*
+                  - aoss:BatchGet*
+                  - aoss:List*
                   - autoscaling:Describe*
                   - batch:Describe*
                   - batch:List*
@@ -108,6 +110,8 @@ Resources:
                   - rds:List*
                   - redshift:Describe*
                   - redshift:List*
+                  - redshift-serverless:List*
+                  - redshift-serverless:Get*
                   - route53:Get*
                   - route53:List*
                   - route53domains:Get*
@@ -125,6 +129,8 @@ Resources:
                   - s3:ListAllMyBuckets
                   - s3:ListBucketVersions
                   - s3:ListJobs
+                  - sagemaker:Describe*
+                  - sagemaker:List*
                   - secretsmanager:Describe*
                   - secretsmanager:GetResourcePolicy
                   - secretsmanager:List*
